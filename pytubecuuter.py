@@ -22,10 +22,12 @@ toDownload = []
 with open(videoList, newline='') as csvfile:
     lineReader = csv.reader(csvfile, delimiter=' ', skipinitialspace=True)
     for row in lineReader:
+        if "#" in row[0]:
+            continue
         toDownload.append(row)
-
+#print(toDownload)
+#sys.exit()
 #Download all movies:
-#for toD in toDownload:
 for i in range(len(toDownload)):
     print(bcolors.OKBLUE + "Downloading video: "+ toDownload[i][0] + bcolors.ENDC)
     try:
@@ -37,8 +39,9 @@ for i in range(len(toDownload)):
     	out_file = video.download()
     except:
     	print(bcolors.FAIL + "Can't download video: " + toDownload[i][0] + bcolors.ENDC)
-    os.rename(out_file, video.default_filename)
-    toDownload[i].append(video.default_filename)
+    videoName = str(i)+video.default_filename
+    os.rename(out_file, videoName)
+    toDownload[i].append(videoName)
 
 def getSeconds(string):
     h, m, s = string.split(':')
