@@ -1,1 +1,4 @@
-https://www.youtube.com/watch?v=xWOoBJUqlbI 0:0:10 0:0:35
+#FORMAT
+#yotubeLink startTime endTime
+#example:
+https://m.youtube.com/watch?v=dQw4w9WgXcQ 0:0:0 0:0:30
