@@ -38,7 +38,7 @@ for i in range(len(toDownload)):
     	out_file = video.download()
     except:
     	print(bcolors.FAIL + "Can't download video: " + toDownload[i][0] + bcolors.ENDC)
-    videoName = str(i)+video.default_filename
+    videoName = video.default_filename
     os.rename(out_file, videoName)
     toDownload[i].append(videoName)
 
@@ -55,7 +55,7 @@ for i in range(len(toDownload)):
     for tIndex in range(1, len(toDownload[i])-1):
         startTime, endTime = getBorder(toDownload[i][tIndex])
         inputFile = toDownload[i][-1]
-        outFile = "Cut_" + str(tIndex) + "_" + toDownload[i][-1]
+        outFile = "Cut_" + str(i)+"_"+str(tIndex) + "_" + toDownload[i][-1]
         print (bcolors.OKBLUE + "Trim from " + str(startTime) + "s to " + str(endTime) + "s" + bcolors.ENDC)
         clip = VideoFileClip(inputFile)
         newClip = clip.subclip(startTime, endTime)
