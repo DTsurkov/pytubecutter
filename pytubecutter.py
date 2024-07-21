@@ -1,10 +1,11 @@
-import sys
 import pytube
 import csv
 import os
 from moviepy.editor import *
 
 videoList = "video.list"
+os.environ["IMAGEIO_FFMPEG_EXE"] = "/usr/bin/ffmpeg"
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -17,8 +18,10 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-#GET DATA FROM LIST:
+
+# GET DATA FROM LIST:
 toDownload = []
+doCut = True
 with open(videoList, newline='') as csvfile:
     lineReader = csv.reader(csvfile, delimiter=' ', skipinitialspace=True)
     for row in lineReader:
@@ -26,39 +29,64 @@ with open(videoList, newline='') as csvfile:
             continue
         toDownload.append(row)
 
-#Download all movies:
+# Download all movies:
 for i in range(len(toDownload)):
-    print(bcolors.OKBLUE + "Downloading video: "+ toDownload[i][0] + bcolors.ENDC)
+    print(bcolors.OKBLUE + "Downloading video: " +
+          toDownload[i][0] + bcolors.ENDC)
     try:
-    	yt = pytube.YouTube(toDownload[i][0])
-    except:
-        print(bcolors.FAIL + "Can't connect to YouTube link: " + toDownload[i][0] + bcolors.ENDC)
-    video = yt.streams.get_highest_resolution()
+        yt = pytube.YouTube(toDownload[i][0])
+    except Exception as ex:
+        print(bcolors.FAIL + "Can't connect to YouTube link: " +
+              toDownload[i][0] + bcolors.ENDC)
+        print(ex)
     try:
-    	out_file = video.download()
+        videoTitle = yt.title
+        print(bcolors.OKCYAN + "Found video: " + videoTitle + bcolors.ENDC)
+    except Exception as ex:
+        print(bcolors.FAIL + "Can't get title for video: " +
+              toDownload[i][0] + bcolors.ENDC)
+        print(ex)
+    try:
+        video = yt.streams.get_highest_resolution()
+        # video = yt.streams.get_by_itag(137)
+        # video = yt.streams.filter(file_extension='mp4')
+        # print(video)
+    except Exception as ex:
+        print(bcolors.FAIL + "Can't get video resolution for video link: " +
+              toDownload[i][0] + bcolors.ENDC)
+        print(ex)
+        break
+    try:
+        out_file = video.download()
     except:
-    	print(bcolors.FAIL + "Can't download video: " + toDownload[i][0] + bcolors.ENDC)
+        print(bcolors.FAIL + "Can't download video: " +
+              toDownload[i][0] + bcolors.ENDC)
     videoName = video.default_filename
     os.rename(out_file, videoName)
     toDownload[i].append(videoName)
+
 
 def getSeconds(string):
     h, m, s = string.split(':')
     return int(h) * 3600 + int(m) * 60 + int(s)
 
+
 def getBorder(string):
     s, e = string.split('-')
-    return [s,e]
+    return [s, e]
 
-#Cut movies:
-for i in range(len(toDownload)):
-    for tIndex in range(1, len(toDownload[i])-1):
-        startTime, endTime = getBorder(toDownload[i][tIndex])
-        inputFile = toDownload[i][-1]
-        outFile = "Cut_" + str(i)+"_"+str(tIndex) + "_" + toDownload[i][-1]
-        print (bcolors.OKBLUE + "Trim from " + str(startTime) + "s to " + str(endTime) + "s" + bcolors.ENDC)
-        clip = VideoFileClip(inputFile)
-        newClip = clip.subclip(startTime, endTime)
-        newClip.write_videofile(outFile, audio_codec="aac")
-        newClip.close()
-        clip.close()
+
+# Cut movies:
+if doCut:
+    for i in range(len(toDownload)):
+        for tIndex in range(1, len(toDownload[i])-1):
+            startTime, endTime = getBorder(toDownload[i][tIndex])
+            inputFile = toDownload[i][-1]
+            outFile = "Cut_" + str(i)+"_"+str(tIndex) + "_" + toDownload[i][-1]
+            print(bcolors.OKBLUE + "Trim from " + str(startTime) +
+                  "s to " + str(endTime) + "s" + bcolors.ENDC)
+            clip = VideoFileClip(inputFile)
+            newClip = clip.subclip(startTime, endTime)
+            newClip.write_videofile(outFile, audio_codec="aac")
+            newClip.close()
+            clip.close()
